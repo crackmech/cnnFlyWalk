@@ -36,13 +36,13 @@ for img_fl in range(0, len(img_files)):
     k = cv2.waitKey(interval)
     if k==27:
         break# Esc key to stop
-    elif k==32:
+    elif k==32:# Spacebar to stop
         while(1):
             cv2.imshow('Patch', im_r)
             cv2.imshow('Patches', im_r)
             j = cv2.waitKey(interval)
             if j==32:
-                break# Esc key to stop
+                break# Spacebar to resume
 cv2.destroyAllWindows()
 
 

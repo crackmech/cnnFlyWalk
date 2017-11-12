@@ -11,7 +11,9 @@ def your_loss(y_true, y_pred):
     from keras import backend as K
 	#weights = np.ones(4)
 	#weights = np.array([ 1 ,  1,  1,  1])
-    weights = np.array([ 0.32 , 1,  1.3,  0.06])
+    weights = np.array([ 0.2 , 1, 0.2 , 1,  0.06])
+        #weights = np.array([0.99524712791495196, 0.98911715534979427, 0.015705375514403319])
+    weights = np.array([ 1 , 1, 1 , 1, 1, 1])
         #weights = np.array([0.99524712791495196, 0.98911715534979427, 0.015705375514403319])
         #weights = np.array([ 0.91640706, 0.5022308, 0.1])
 	#weights = np.array([ 0.05 ,  1.3,  0.55,  4.2])
@@ -71,13 +73,13 @@ patches_comDir = 'cleaned/patches/combined'
 patches_xsDir = 'cleaned/patches/xs'
 patches_ysDir = 'cleaned/patches/ys'
 
-nImages = 5000
+nImages = 2000
 modelsDir = 'models'
 
-srcDir = 'temp_cropped_42'
+srcDir = '20170512_235710_tracked'
 dstDir = srcDir+'_results'
 
-ysize = 36
+ysize = 108
 overlap = 10
 xsize = ysize+(overlap*2)
 
@@ -88,38 +90,6 @@ ids = ['body',
        'bg']
 
 
-#colors = [[79,255,130],
-#          [255,0,0],
-#          [0,0,0],
-#          [255,255,10],
-#          [198,118,255]]
-
-#
-#colors = [[79,255,130],
-#          [255,0,0],
-#          [255,137,12],
-#          [0,0,0],
-#          [135,12,255],
-#          [255,121,193],
-#          [121,255,250],
-#          [12,102,255],
-#          [255,255,10],
-#          [198,118,255],
-#        ]
-
-
-
-#ids = ['body',
-#       'legs',
-#       'antennae',
-#       'bg']
-#
-
-#colors = [[79,255,130],
-#          [255,0,0],
-#          [255,255,10],
-#          [198,118,255]]
-#
 
 #ids = ['body',
 #       'legs',
@@ -128,18 +98,35 @@ ids = ['body',
 #       'bg']
 #
 
-colors = [[79,255,130],
-          [255,0,0],
-          [198,118,255],
-          [255,255,10],
-          [84,226,255]
-         ]
+#colors = [[79,255,130],
+#          [255,0,0],
+#          [198,118,255],
+#          [255,225,10],
+#          [84,226,255]
+#         ]
+
+headColor = [153,153,153]
+tailColor = [204,204,204]
+bodyColor = [0, 0, 0]
+LegColor  = [51,51,51]
+legTipcolor = [255, 255, 255]
+bgColor = [102,102,102]
+
+
+colors = [
+            headColor,
+            tailColor,
+            bodyColor,
+            LegColor,
+            legTipcolor,
+            bgColor
+]
 
 n_labels = len(colors)
 n_channels = 1
 
 kernel = 3
-trainBatchSize = 64
+trainBatchSize = 48
 nEpoch = 20
 
 outBatchSize = 16

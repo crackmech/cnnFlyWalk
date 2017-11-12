@@ -71,7 +71,7 @@ for img_fl, lbl_fl in zip(img_files, label_files):
 
     count = 0
     # Get overlapping patches
-    while(count<15):
+    while(count<5):
         
             i = np.random.randint(0, img.shape[0]-inner_size)
             j = np.random.randint(0, img.shape[1]-inner_size)

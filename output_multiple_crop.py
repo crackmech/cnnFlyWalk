@@ -19,6 +19,7 @@ import re
 import time
 import random
 from datetime import datetime
+import cv2
 
 from functions import ysize, overlap, xsize, colors, ids, n_labels, n_channels
 from functions import outBatchSize, modelsDir, srcDir, dstDir
@@ -102,7 +103,7 @@ for model_n in models:
                 #imgcount = 0
                 count= 0
                 img = imgs[ix]
-                tile_output = np.zeros((img.shape[0],img.shape[1],n_labels))
+#                tile_output = np.zeros((img.shape[0],img.shape[1],n_labels))
                 zeros = np.zeros((img.shape[0],img.shape[1],n_labels))
                 im = np.zeros((img.shape[0],img.shape[1],3))
 
@@ -110,10 +111,14 @@ for model_n in models:
                     for j in xrange(0, img.shape[1], ysize):
                         zeros[i:i+ysize,j:j+ysize] = y[count]
                         count += 1
-                
+#                for i in xrange(n_labels):
+#                    print i, '  ', np.argmax(zeros[:,:,i])
                 for i in range(img.shape[0]):
                     for j in range(img.shape[1]):
-                        im[i,j,:] = colors[np.argmax(zeros[i,j])]
-                plt.imsave(dstDir+'/%s_im.png'%(file_names[ix]), im)
+                        col =  np.argmax(zeros[i,j])
+                        im[i,j,:] = [colors[col][2],colors[col][1],colors[col][0]]
+                cv2.imwrite(dstDir+'/%s_im.png'%(file_names[ix]), im)
+#                plt.imsave(dstDir+'/h/%s_im_head.png'%(file_names[ix]), zeros[:,:,2])
+#                plt.imsave(dstDir+'/t/%s_im_tail.png'%(file_names[ix]), zeros[:,:,3])
 
 print "total processing done in: "+str((datetime.now()-tick).total_seconds())

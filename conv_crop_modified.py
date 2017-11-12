@@ -2,16 +2,34 @@ import keras
 from keras import backend as K
 from keras import models
 from keras.layers import ZeroPadding2D
-from keras.layers.core import Activation, Reshape, Permute
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D, Cropping2D
+#from keras.layers.core import Activation, Reshape, Permute
+from keras.layers.core import Activation
+from keras.layers.core import Reshape
+from keras.layers.core import Permute
+#from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D, Cropping2D, Conv2D
+from keras.layers.convolutional import Cropping2D
+from keras.layers.convolutional import MaxPooling2D
+from keras.layers.convolutional import UpSampling2D
+from keras.layers.convolutional import Conv2D
+
 from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD
 from skimage.io import imread
-from keras.callbacks import ModelCheckpoint, LambdaCallback, ReduceLROnPlateau
+#from keras.callbacks import ModelCheckpoint, LambdaCallback, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import LambdaCallback
+from keras.callbacks import ReduceLROnPlateau
 import numpy as np
 from keras.models import load_model
 from functions import your_loss
-from functions import ysize, overlap, xsize, colors, ids, n_labels, n_channels
+#from functions import ysize, overlap, xsize, colors, ids, n_labels, n_channels
+from functions import ysize
+from functions import overlap
+from functions import xsize
+from functions import colors
+from functions import ids
+from functions import n_labels
+from functions import n_channels
 from functions import trainBatchSize, nEpoch, kernel
 
 
@@ -19,18 +37,18 @@ autoencoder = models.Sequential()
 #autoencoder.add(ZeroPadding2D((1,1), input_shape=(3, xsize, xsize), dim_ordering='th'))
 
 encoding_layers = [
-    Convolution2D(16, kernel, kernel, border_mode='same', input_shape=(xsize, xsize, n_channels)),
+    Conv2D(16, kernel, kernel, border_mode='same', input_shape=(xsize, xsize, n_channels)),
     BatchNormalization(),
     Activation('relu'),
-    Convolution2D(16, kernel, kernel, border_mode='same'),
+    Conv2D(16, kernel, kernel, border_mode='same'),
     BatchNormalization(),
     Activation('relu'),
     MaxPooling2D(),
 
-    Convolution2D(32, kernel, kernel, border_mode='same'),
+    Conv2D(32, kernel, kernel, border_mode='same'),
     BatchNormalization(),
     Activation('relu'),
-    Convolution2D(32, kernel, kernel, border_mode='same'),
+    Conv2D(32, kernel, kernel, border_mode='same'),
     BatchNormalization(),
     Activation('relu'),
     MaxPooling2D(),
@@ -44,18 +62,18 @@ for l in autoencoder.encoding_layers:
 decoding_layers = [
 
     UpSampling2D(),
-    Convolution2D(32, kernel, kernel, border_mode='same'),
+    Conv2D(32, kernel, kernel, border_mode='same'),
     BatchNormalization(),
     Activation('relu'),
-    Convolution2D(32, kernel, kernel, border_mode='same'),
+    Conv2D(32, kernel, kernel, border_mode='same'),
     BatchNormalization(),
     Activation('relu'),
 
     UpSampling2D(),
-    Convolution2D(16, kernel, kernel, border_mode='same'),
+    Conv2D(16, kernel, kernel, border_mode='same'),
     BatchNormalization(),
     Activation('relu'),
-    Convolution2D(n_labels, 1, 1, border_mode='valid'),
+    Conv2D(n_labels, 1, 1, border_mode='valid'),
     BatchNormalization(),
 ]
 autoencoder.decoding_layers = decoding_layers

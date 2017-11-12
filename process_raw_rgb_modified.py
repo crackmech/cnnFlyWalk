@@ -11,7 +11,7 @@ import random
 from functions import transforms, raw_to_labels
 from skimage.color import rgb2gray
 import cv2
-from functions import ysize, overlap, xsize, colors, ids, n_labels, n_channels, nImages
+from functions import ysize, overlap, xsize, colors, ids, n_labels, n_channels, nImages, present_time
 
 # This is a comment. Move along people.
 
@@ -58,9 +58,11 @@ ys = ys.reshape(xs.shape[0], ysize, ysize, n_labels).astype(float) # Convert to 
 #print(xs.shape, ys.shape, np.unique(xs), np.unique(ys))
 
 np.save('xs_s.npy',xs) # Normalize between 0-1
+print('Saved xs_s.npy on: %s'%present_time())
+
 np.save('ys_s.npy',ys)
 
-
+print('Saved ys_s.npy on: %s'%present_time())
 
 
 

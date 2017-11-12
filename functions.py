@@ -1,5 +1,11 @@
 #from skimage.io import imread
 import numpy as np
+from datetime import datetime
+
+def present_time():
+        now = datetime.now()
+        return now.strftime('%Y%m%d_%H%M%S')
+
 
 def rotate_thrice(square):
         return [square, np.rot90(square, 1), np.rot90(square, 2), np.rot90(square, 3)]
@@ -50,7 +56,7 @@ def raw_to_labels(image, colors, count):
     #assert(image.max()==255)
     #if count <= 5:
     if count%100==0:
-	print count
+	print count, present_time()
     imSections = []
     for i in range(0, len(colors)):
         imSections.append(  (image[:,:,0] == colors[i][0]) &\

@@ -321,7 +321,7 @@ def tracknCrop(dirname, saveExtension, params):
         fname = dirname+"_trackData_"+rawDir
         trackImg = createTrack(trackedData, cv2.imread(dirname+'/'+flist[0]))
         cv2.imwrite(fname+'.jpeg', trackImg)
-        np.savetxt(fname+".csv",np.transpose(trackedData), fmt='%.3f', delimiter = ',', header = 'X-Coordinate, Y-Coordinate')
+        np.savetxt(fname+".csv",trackedData, fmt='%.3f', delimiter = ',', header = 'X-Coordinate, Y-Coordinate')
         print('Processed %i Images in %0.3f seconds\nAverage total processing speed: %05f FPS'\
         %(len(flist), startTime5-startTime1, (len(flist)/(time.time()-startTime1)))) 
 

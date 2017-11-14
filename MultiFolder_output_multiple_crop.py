@@ -13,9 +13,16 @@ from scipy.misc import imread
 import re
 import time
 import cv2
+import Tkinter as tk
+import tkFileDialog as tkd
+import zipfile
+
 
 from functions import ysize, overlap, xsize, colors, n_labels, n_channels
 from functions import outBatchSize, modelsDir, srcDir, dstDir
+
+
+
 
 batch_size = outBatchSize
 [color.reverse() for color in colors]
@@ -23,6 +30,27 @@ try:
     os.mkdir(dstDir)
 except:
     print("Not able to create the output directory")
+
+
+
+def present_time():
+        now = datetime.now()
+        return now.strftime('%Y%m%d_%H%M%S')
+
+def natural_sort(l): 
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
+def getFolder(initialDir):
+    '''
+    GUI funciton for browsing and selecting the folder
+    '''    
+    root = tk.Tk()
+    initialDir = tkd.askdirectory(parent=root,
+                initialdir = initialDir, title='Please select a directory')
+    root.destroy()
+    return initialDir+'/'
 
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
@@ -41,11 +69,6 @@ def get_tiles(img, ysize, overlap):
             xs.append(img_overlapped)
             
     return xs
-
-def natural_sort(l): 
-    convert = lambda text: int(text) if text.isdigit() else text.lower() 
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
-    return sorted(l, key = alphanum_key)
 
 def getImsFromYs(segmentedY, nlabels, outDir, inImgs, fnames, ysize, colors):
     '''
@@ -91,19 +114,62 @@ def getOutput(model, inDir, outdir, batchSize):
         xs = tiles.reshape(imgs.shape[0]*len(tiles[0]),xsize,xsize,n_channels)
         start_time = time.time()
         # Predict output
+        print '5', xs.shape
         ys = model.predict(xs)
+        print '6'
         print("---- %s seconds for size: %d ----"%(time.time()-start_time, xs.shape[0]))
         ys = ys.reshape(imgs.shape[0],len(tiles[0]), ysize, ysize, n_labels)
         getImsFromYs(segmentedY=ys , nlabels = n_labels, outDir = outdir, inImgs = imgs, fnames = file_names, ysize = ysize, colors = colors)
 
+
 models = sorted(natural_sort(glob.glob(modelsDir+'/*.h5')), key=lambda name: int(re.search(r'\d+', name).group()), reverse=True)[0:1]
 print(models)
 tick = datetime.now()
-for model_n in models:
-    #model_n ='models/5700_6Classes_256_10K.h5'
-    inModel = load_model(model_n, custom_objects={'your_loss': your_loss})
-    print("Loaded :%s", model_n)
-    getOutput(model = inModel, inDir = srcDir, outdir = dstDir, batchSize = batch_size)
+#for model_n in models:
+#    #model_n ='models/5700_6Classes_256_10K.h5'
+#    inModel = load_model(model_n, custom_objects={'your_loss': your_loss})
+#    print("Loaded :%s", model_n)
+#    getOutput(model = inModel, inDir = srcDir, outdir = dstDir, batchSize = batch_size)
+#
+#
+#print "total processing done in: "+str((datetime.now()-tick).total_seconds())
+#
+#
+#
+inModel = load_model(models[0], custom_objects={'your_loss': your_loss})
+
+inDir = '/media/aman/data/flyWalk_data/LegPainting/glassChamber/'
+initialDir = inDir
+imgDatafolder = 'imageData'
+baseDir = getFolder(initialDir)
+rawdirs = natural_sort([ name for name in os.listdir(baseDir) if os.path.isdir(os.path.join(baseDir, name)) ])
+
+print "Started processing directories at "+present_time()
+for rawDir in rawdirs:
+    print rawDir
+#    print "----------Processing directoy: "+os.path.join(baseDir,rawDir)+'--------'
+    d = os.path.join(baseDir, rawDir, imgDatafolder)
+    imdirs = natural_sort([ os.path.join(d, name) for name in os.listdir(d) if os.path.isdir(os.path.join(d, name)) ])
+    for imdir in imdirs:
+        if 'tracked' in imdir:
+            print imdir
+            inDir = os.path.join(imdir, 'temp_cropped')
+            outDir = inDir+'_segmented'
+            os.mkdir(outDir)
+            getOutput(model = inModel, inDir = inDir, outdir = outDir, batchSize = batch_size)
+            
 
 
-print "total processing done in: "+str((datetime.now()-tick).total_seconds())
+
+
+
+
+
+
+
+
+
+
+
+
+

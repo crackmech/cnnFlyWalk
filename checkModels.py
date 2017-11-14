@@ -64,14 +64,16 @@ def natural_sort(l):
 
 
 
-models = sorted(natural_sort(glob.glob(modelsDir+'/*.h5')), key=lambda name: int(re.search(r'\d+', name).group()), reverse=True)[0:1]
+models = sorted(natural_sort(glob.glob(modelsDir+'/*')), key=lambda name: int(re.search(r'\d+', name).group()), reverse=True)
 print(models)
 tick = datetime.now()
 for model_n in models:
-    #model_n ='models/5700_6Classes_256_10K.h5'
+    #model_n = 'models/5700_6Classes_256_10K.h5'
+    outDir = dstDir+'/'+model_n.lstrip(modelsDir+'/')
+    os.mkdir(outDir)
     model = load_model(model_n, custom_objects={'your_loss': your_loss})
     print("Loaded :%s", model_n)
-    files_all = natural_sort(glob.glob(srcDir+'/*'))
+    files_all = natural_sort(glob.glob(srcDir+'/*'))[:100]
     imdims = imread(files_all[0]).shape[0]
     if imdims%float(ysize)==0:
         offset = 0
@@ -117,7 +119,7 @@ for model_n in models:
                     for j in range(img.shape[1]):
                         col =  np.argmax(zeros[i,j])
                         im[i,j,:] = [colors[col][2],colors[col][1],colors[col][0]]
-                cv2.imwrite(dstDir+'/%s_im.png'%(file_names[ix]), im)
+                cv2.imwrite(outDir+'/%s_im.png'%(file_names[ix]), im)
 #                plt.imsave(dstDir+'/h/%s_im_head.png'%(file_names[ix]), zeros[:,:,2])
 #                plt.imsave(dstDir+'/t/%s_im_tail.png'%(file_names[ix]), zeros[:,:,3])
 

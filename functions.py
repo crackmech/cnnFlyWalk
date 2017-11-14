@@ -82,7 +82,7 @@ patches_ysDir = 'cleaned/patches/ys'
 nImages = 2000
 modelsDir = 'models'
 
-srcDir = '20170512_235710_tracked'
+srcDir = 'temp_cropped'
 dstDir = srcDir+'_results'
 
 ysize = 108

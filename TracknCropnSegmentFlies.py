@@ -43,11 +43,6 @@ import zipfile
 
 
 
-dirname = '/home/aman/Desktop/testWalk/20161017_200525'
-dirname = '/media/aman/data/testWalk/20161017_200525'
-
-initialDir = '/media/flywalk/data/'
-initialDir = '/media/aman/data/flyWalk_data/LegPainting/glassChamber'
 
 params = cv2.SimpleBlobDetector_Params()
 params.blobColor = 0
@@ -67,7 +62,7 @@ hcrop = 100
 vcrop = 100
 crop = 100
 
-
+nImThreshold = 100# if number of images in a folder is less than this, then the folder is not processed
 
 def present_time():
         now = datetime.now()
@@ -288,7 +283,7 @@ def getOutput(model, inDir, outdir, batchSize):
         ys = ys.reshape(imgs.shape[0],len(tiles[0]), ysize, ysize, n_labels)
         getImsFromYs(segmentedY=ys , nlabels = n_labels, outDir = outdir, inImgs = imgs, fnames = file_names, ysize = ysize, colors = colors)
 
-def tracknCrop(dirname, saveExtension, params):
+def tracknCrop(dirname, saveExtension, params, nImThreshold):
     '''
     tracks the fly using cv2.SimpleBlobDetector method and saves the tracked flies in folders
     '''
@@ -299,7 +294,8 @@ def tracknCrop(dirname, saveExtension, params):
         pass
     flist = natural_sort(os.listdir(dirname))
     print '\nprocessing %i frames in\n==> %s'%(len(flist), dirname)
-    if len(flist)==0:
+    if len(flist)<=nImThreshold:
+	print('Less Images to process, not processing folder, nImages present: %i'%len(flist))
         pass
     else:
         img = cv2.imread(dirname+'/'+flist[0],cv2.IMREAD_GRAYSCALE)
@@ -308,13 +304,13 @@ def tracknCrop(dirname, saveExtension, params):
         for i in xrange(len(flist)):
             imgs[i] = cv2.imread(dirname+'/'+flist[i],cv2.IMREAD_GRAYSCALE)
         startTime2 = time.time()
-        print('Read Images in: %0.3f seconds'%(startTime2-startTime1))
+        print('Read Images in: %0.3f seconds, now tracking'%(startTime2-startTime1))
         trackedData = getTrackData(imStack = imgs, Blobparams = params)
         startTime3 = time.time()
-        print('Tracked in: %0.3f seconds'%(startTime3-startTime2))
+        print('Tracked in: %0.3f seconds, now cropping'%(startTime3-startTime2))
         cropStack = cropImstack(imStack = imgs, trackData = trackedData, hCropbox = hcrop, vCropbox = vcrop, cropbox = crop)
         startTime4 = time.time()
-        print('Cropped Images in: %0.3f seconds'%(startTime4-startTime3))
+        print('Cropped Images in: %0.3f seconds, now saving'%(startTime4-startTime3))
         cropDir, origDir = saveCroppedIms(croppedStack = cropStack, ImStack = imgs, saveDir = outDir, extension = saveExtension, hCropbox = hcrop)
         startTime5 = time.time()
         print('Saved Images in: %0.3f seconds'%(startTime5-startTime4))
@@ -328,12 +324,11 @@ def tracknCrop(dirname, saveExtension, params):
         #getOutput(model = inModel, inDir = cropDir.rstrip('/'), outdir = segDir, batchSize = 16)
 
 
-inDir = '/media/aman/data/flyWalk_data/LegPainting/glassChamber/'
+inDir = '/media/flywalk/data/imaging/'
 initialDir = inDir
 
 imgDatafolder = 'imageData'
-#baseDir = getFolder(initialDir)
-baseDir = initialDir
+baseDir = getFolder(initialDir)
 rawdirs = natural_sort([ name for name in os.listdir(baseDir) if os.path.isdir(os.path.join(baseDir, name)) ])
 
 print "Started processing directories at "+present_time()
@@ -343,7 +338,7 @@ for rawDir in rawdirs:
     imdirs = natural_sort([ os.path.join(d, name) for name in os.listdir(d) if os.path.isdir(os.path.join(d, name)) ])
     for imdir in imdirs:
         dirs = os.path.join(d,imdir)
-        t = tracknCrop(os.path.join(d,imdir), '.png', params)
+        t = tracknCrop(os.path.join(d,imdir), '.png', params, nImThreshold)
 
 
 

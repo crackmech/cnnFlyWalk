@@ -288,6 +288,7 @@ def tracknCrop(dirname, saveExtension, params, nImThreshold):
     tracks the fly using cv2.SimpleBlobDetector method and saves the tracked flies in folders
     '''
     outDir = dirname+"_tracked/"
+    #print outDir
     try:
         os.mkdir(outDir)
     except:
@@ -324,8 +325,7 @@ def tracknCrop(dirname, saveExtension, params, nImThreshold):
         #getOutput(model = inModel, inDir = cropDir.rstrip('/'), outdir = segDir, batchSize = 16)
 
 
-inDir = '/media/flywalk/data/imaging/'
-initialDir = inDir
+initialDir = '/media/flywalk/data/imaging/'
 
 imgDatafolder = 'imageData'
 baseDir = getFolder(initialDir)

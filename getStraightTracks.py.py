@@ -92,7 +92,7 @@ def displaySortedTracks(csvData, imname, winLen, angThres, frameThresh, getIm):
                     cv2.circle(imData,(int(csvData[angList[i]+j,0]), int(csvData[angList[i]+j,1])), 1, (0,200,200), thickness=2)#draw a circle on the detected body blobs
     return imData, nTracks
 
-def plotForWinSize(totalTracks, winSizes, winStep):
+def plotForWinSize(totalTracks, winSizes, step, title):
 	'''
 	input: totalTracks: 	a list of list for each window size. Each list in totalTracks contain
 				track data from each csv from the csv folder for corresponding Sliding Window Size
@@ -132,12 +132,11 @@ def plotForWinSize(totalTracks, winSizes, winStep):
               plt.scatter(np.linspace(i+scatterDataWidth, i-scatterDataWidth,len(tracksLen[i]) ), tracksLen[i],\
 			s=2, alpha=0.4, linewidths=1, edgecolors=(0,0,1) )
 	plt.xlim(0, len(tracksLen))
-	plt.ylim(50, 1500)
+	plt.ylim(0, 1500)
 	plt.legend(fontsize='small').draggable()
-	plt.xticks(np.arange(0, len(winSizes), 4), np.arange(0, len(winSizes), 4)*winStep)
-	plt.xlabel('Sliding Window Length')
+	plt.xticks(np.arange(0, len(totalTracks)), winSizes)
+	plt.xlabel(title)
 	plt.show()
-	plt.close()
 
 def winSizeSlide(csvData, imnames, winStart, winStop, winStep, angleThreshold, framesThreshold):
     '''
@@ -155,7 +154,7 @@ def winSizeSlide(csvData, imnames, winStart, winStop, winStep, angleThreshold, f
             csvTracks.append(tracks)
         totalTracks.append(csvTracks)
     winSizes = [s for s in xrange(winStart,winStop,winStep)]
-    plotForWinSize(totalTracks, winSizes, winStep)
+    plotForWinSize(totalTracks, winSizes, winStep, 'Sliding Window Length')
 
 def angleSlide(csvData, imnames, angleThresholdMin, angleThresholdMax, angleThresholdStep, winLen, framesThreshold):
     '''
@@ -173,22 +172,45 @@ def angleSlide(csvData, imnames, angleThresholdMin, angleThresholdMax, angleThre
             csvTracks.append(tracks)
         totalTracks.append(csvTracks)
     angles = [s for s in xrange(angleThresholdMin,angleThresholdMax,angleThresholdStep)]
-    plotForWinSize(totalTracks, angles, angleThresholdStep)
+    plotForWinSize(totalTracks, angles, angleThresholdStep, 'Angle of positions for straight track calculation')
+
+
+def frameNSlide(csvData, imnames, framesThresholdMin, framesThresholdMax, framesThresholdStep, winLen, angleThreshold):
+    '''
+    plots a curve and box plot for average/median length and number of tracks calculated by input parameters
+    '''
+    print(len(csvnames))
+    for framesThreshold in xrange(framesThresholdMin, framesThresholdMax, framesThresholdStep):
+        print('Processing for number of frames: %i'%framesThreshold)
+        csvTracks = []
+        for i in xrange(len(csvnames)):
+            csvname = csvnames[i]
+            imname = [name for name in imnames if csvname.rstrip('.csv') in name][0]
+            data = csvData[i]
+            im, tracks = displaySortedTracks(data, imname, winLen, angleThreshold, framesThreshold, getIm=False)
+            csvTracks.append(tracks)
+        totalTracks.append(csvTracks)
+    frames = [s for s in xrange(framesThresholdMin, framesThresholdMax, framesThresholdStep)]
+    plotForWinSize(totalTracks, frames, framesThresholdStep, 'Minimum number of frames per track')
 
 
 winStart = 1
 winStop = 15
 winStep = 1
 
-winLen = 9
-angleThreshold = 155
-angleThresholdMin = 0
+winLen = 9 # calculated from Sliding Windows plot
+angleThreshold = 140#calculated from angles plot
+framesThreshold = 120 #calculated from frames plot
+
+
+angleThresholdMin = 120
 angleThresholdMax = 180
 angleThresholdStep = 1
 
-framesThreshold = 120
-framesThresholdMin = 50
-framesThreshold = 400
+framesThresholdMin = 0
+framesThresholdMax = 500
+framesThresholdStep = 10
+
 
 totalTracks = []
 totalTrackLen = []
@@ -197,13 +219,18 @@ imnames  = glob.glob(fpath+'/*'+extension)
 
 csvData  = [np.genfromtxt(csvnames[i], dtype='float',delimiter = ',', skip_header=1) for i in xrange(len(csvnames))]
 nCsvs = len(csvData)
+print 'read data'
 
-
-#plot for different window size, fixed angle and frame threshold
+##plot for different window size, fixed angle and frame threshold
 #winSizeSlide(csvData, imnames, winStart, winStop, winStep, angleThreshold, framesThreshold)
 
-angleSlide(csvData, imnames, angleThresholdMin, angleThresholdMax, angleThresholdStep, winLen, framesThreshold)
 
+##plot for different angle trhesholds, fixed window size and fixed number of frames
+#angleSlide(csvData, imnames, angleThresholdMin, angleThresholdMax, angleThresholdStep, winLen, framesThreshold)
+
+
+frameNSlide(csvData, imnames, framesThresholdMin, framesThresholdMax, framesThresholdStep, winLen, angleThreshold)
+ 
 
 '''
 

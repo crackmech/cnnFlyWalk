@@ -11,15 +11,45 @@ from math import atan2, degrees
 import cv2
 import glob
 import matplotlib.pyplot as plt
+import Tkinter as tk
+import tkFileDialog as tkd
+from datetime import datetime
+import re
+import os
 
 
 fpath = '/media/flywalk/data/uploaded/csvs_tmp_20171116/'
+fpath = '/home/aman/git/cnnflywalk/trackData_CS/'
 fname = '20171115_172148_trackData_20171115_171111_CS_20171111-12_0515_1-Walking.csv'
 imname = '20171115_172148_trackData_20171115_171111_CS_20171111-12_0515_1-Walking.jpeg'
+
+xDistance = 35 #distance in mm for x-direction pixels (horizontal pixels), used for caliberation
+nXPixels = 1280 # number of pixels in x-direction (number of horizontal pixels)
+
+resolution = float(xDistance/nXPixels) #mm/pixel, pixel size in mm, for speed calculation
 
 extension = '.jpeg'
 #np.(fname+".csv",trackedData, fmt='%.3f', delimiter = ',', header = 'X-Coordinate, Y-Coordinate')
 
+
+def present_time():
+        now = datetime.now()
+        return now.strftime('%Y%m%d_%H%M%S')
+
+def natural_sort(l): 
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
+def getFolder(initialDir):
+    '''
+    GUI funciton for browsing and selecting the folder
+    '''    
+    root = tk.Tk()
+    initialDir = tkd.askdirectory(parent=root,
+                initialdir = initialDir, title='Please select a directory')
+    root.destroy()
+    return initialDir+'/'
 
 def findAngle(a1, center, a2):
     '''
@@ -76,6 +106,12 @@ def displaySortedTracks(csvData, imname, winLen, angThres, frameThresh, getIm):
             nTracks.append((angList[i],angList[i+1]))
     if getIm:
 	imData = cv2.imread(imname)
+        nTracks = []
+        for i in xrange(len(angList)-1):
+            if angList[i+1]-angList[i]>frameThresh:
+                nTracks.append((angList[i],angList[i+1]))
+                for j in xrange(angList[i+1]-angList[i]):
+                    cv2.circle(imData,(int(csvData[angList[i]+j,0]), int(csvData[angList[i]+j,1])), 1, (200,200,200), thickness=2)#draw a circle on the detected body blobs
         for i in xrange(winLen, len(csvData)-winLen-1):
             angles = findAngle(csvData[i-winLen], csvData[i], csvData[i+winLen])
             if angThres>angles>-angThres:
@@ -84,12 +120,6 @@ def displaySortedTracks(csvData, imname, winLen, angThres, frameThresh, getIm):
                 if angThres>anglesWinMinus>-angThres and angThres>anglesWinPlus>-angThres:
                     angList.append(i)
                     cv2.circle(imData,(int(csvData[i,0]), int(csvData[i,1])), 1, (0,0,200), thickness=2)#draw a circle on the detected body blobs
-        nTracks = []
-        for i in xrange(len(angList)-1):
-            if angList[i+1]-angList[i]>frameThresh:
-                nTracks.append((angList[i],angList[i+1]))
-                for j in xrange(angList[i+1]-angList[i]):
-                    cv2.circle(imData,(int(csvData[angList[i]+j,0]), int(csvData[angList[i]+j,1])), 1, (0,200,200), thickness=2)#draw a circle on the detected body blobs
     return imData, nTracks
 
 def plotForWinSize(totalTracks, winSizes, step, title):
@@ -187,7 +217,13 @@ def frameNSlide(csvData, imnames, framesThresholdMin, framesThresholdMax, frames
             csvname = csvnames[i]
             imname = [name for name in imnames if csvname.rstrip('.csv') in name][0]
             data = csvData[i]
-            im, tracks = displaySortedTracks(data, imname, winLen, angleThreshold, framesThreshold, getIm=False)
+            im, tracks = displaySortedTracks(data, imname, winLen, angleThreshold, framesThreshold, getIm=True)
+            print 'Total Tracks: ',len(tracks)
+            try:
+                cv2.destroyWindow(str(framesThreshold-(2*framesThresholdStep)))
+            except:
+                pass
+            cv2.imshow(str(framesThreshold), im); cv2.waitKey()
             csvTracks.append(tracks)
         totalTracks.append(csvTracks)
     frames = [s for s in xrange(framesThresholdMin, framesThresholdMax, framesThresholdStep)]
@@ -198,28 +234,34 @@ winStart = 1
 winStop = 15
 winStep = 1
 
-winLen = 9 # calculated from Sliding Windows plot
-angleThreshold = 140#calculated from angles plot
-framesThreshold = 120 #calculated from frames plot
+winLen = 9                      #calculated from Sliding Windows plot
+angleThreshold = 140            #calculated from angles plot
+framesThreshold = 120           #calculated from frames plot
 
 
 angleThresholdMin = 120
 angleThresholdMax = 180
 angleThresholdStep = 1
 
-framesThresholdMin = 0
-framesThresholdMax = 500
-framesThresholdStep = 10
+framesThresholdMin = 10
+framesThresholdMax = 100
+framesThresholdStep = 20
 
 
 totalTracks = []
 totalTrackLen = []
-csvnames = glob.glob(fpath+'/*.csv')
-imnames  = glob.glob(fpath+'/*'+extension)
 
-csvData  = [np.genfromtxt(csvnames[i], dtype='float',delimiter = ',', skip_header=1) for i in xrange(len(csvnames))]
-nCsvs = len(csvData)
-print 'read data'
+
+#----------------- get csvData for all the csv files in one folder-------------------
+
+
+#csvnames = glob.glob(fpath+'/*.csv')
+#imnames  = glob.glob(fpath+'/*'+extension)
+#print present_time()
+#
+#csvData  = [np.genfromtxt(csvnames[i], dtype='float',delimiter = ',', skip_header=1) for i in xrange(len(csvnames))]
+#nCsvs = len(csvData)
+#print 'read data', i, present_time()
 
 ##plot for different window size, fixed angle and frame threshold
 #winSizeSlide(csvData, imnames, winStart, winStop, winStep, angleThreshold, framesThreshold)
@@ -229,8 +271,82 @@ print 'read data'
 #angleSlide(csvData, imnames, angleThresholdMin, angleThresholdMax, angleThresholdStep, winLen, framesThreshold)
 
 
-frameNSlide(csvData, imnames, framesThresholdMin, framesThresholdMax, framesThresholdStep, winLen, angleThreshold)
- 
+#frameNSlide(csvData, imnames, framesThresholdMin, framesThresholdMax, framesThresholdStep, winLen, angleThreshold)
+#cv2.destroyAllWindows()
+#----------------- get csvData for all the csv files in one folder-------------------
+
+
+
+
+#----------------- get csvData for all the csv files in the folders after tracking of flies-------------------
+fpath = '/home/aman/git/cnnflywalk/CS/'
+initialDir = fpath
+baseDir = fpath
+imgDatafolder = 'imageData'
+#baseDir = getFolder(initialDir)
+rawdirs = natural_sort([ name for name in os.listdir(baseDir) if os.path.isdir(os.path.join(baseDir, name)) ])
+
+print "Started processing directories at "+present_time()
+
+csvNamesList = []
+imNamesList = []
+l = 0
+for rawDir in rawdirs:
+#    print rawDir
+#    print "----------Processing directoy: "+os.path.join(baseDir,rawDir)+'--------'
+    d = os.path.join(baseDir, rawDir, imgDatafolder)
+    csvs = glob.glob(d+'/*.csv')
+    imgs = glob.glob(d+'/*'+extension)
+    l+=len(csvs)
+    csvNamesList.append(csvs)
+    imNamesList.append(imgs)
+
+csvData = []
+imnames = []
+csvnames = []
+
+for i in xrange(len(csvNamesList)):
+    for j in xrange(len(csvNamesList[i])):
+        csvData.append(np.genfromtxt(csvNamesList[i][j], dtype='float',delimiter = ',', skip_header=1))
+        imnames.append(imNamesList[i][j])
+        csvnames.append(csvNamesList[i][j])
+#csvData  = [np.genfromtxt(csvNamesList[i,j], dtype='float',delimiter = ',', skip_header=1) for i in xrange(len(csvNamesList[j]))]
+nCsvs = len(csvData)
+print 'read data', nCsvs, len(imnames), l, present_time()
+
+c = 0
+l = 0
+for i in xrange(len(rawdirs)):
+    for j in xrange(len(imnames)):
+        if rawdirs[i] in imnames[j]:
+            c+=1
+    print i, c
+
+for j in xrange(len(imnames)):
+    if rawdirs[17] in imnames[j]:
+        print imnames[j]
+
+#----------------- get csvData for all the csv files in the folders after tracking of flies-------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 '''
 

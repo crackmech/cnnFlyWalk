@@ -175,17 +175,10 @@ def processRawDirs(rawDir):
 #    stats.write('\n'+endString+' for: %s'%processTime)
 #    stats.close()
 
-
-dirname = 'tmp/20170512_235710/'
-dirname = '/media/aman/data/transfer/flyWalk_data/LegPainting/glassChamber/20171114_014418_CS_20171108-09_2330_3-Walking/imageData/20171114_015023_tracked/0_original/'
-
 baseDir = '/media/aman/data/flyWalk_data/'
-folder =  '20171117_173821_CS_201711113-14_0100_3-Walking/'
+baseDir = '/media/aman/data/flyWalk_data/'
 
-
-dirname = baseDir+folder+'imageData/'
-
-dirname = getFolder(dirname)+'0_original/'
+baseDir = getFolder(baseDir)
 verbose = False
 fileExt = '.png'
 decPoint = 5
@@ -217,7 +210,6 @@ walkParams = {
                 }
 
 
-baseDir = '/media/aman/data/flyWalk_data/'
 
 headers = ['area_average(mm^2)', 'minorAxis_average(mm)', 'majorAxis_average(mm)',\
             'area_median(mm^2)', 'minorAxis_median(mm)', 'majorAxis_median(mm)' ,\

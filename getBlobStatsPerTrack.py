@@ -175,8 +175,8 @@ def processRawDirs(rawDir):
 #    stats.write('\n'+endString+' for: %s'%processTime)
 #    stats.close()
 
-baseDir = '/media/aman/data/flyWalk_data/'
-baseDir = '/media/aman/data/flyWalk_data/'
+#baseDir = '/media/aman/data/flyWalk_data/'
+baseDir = '/media/aman/pointgrey/flyWalk/'
 
 baseDir = getFolder(baseDir)
 verbose = False
